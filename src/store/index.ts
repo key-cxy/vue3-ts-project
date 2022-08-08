@@ -1,5 +1,7 @@
-import { createStore } from "vuex";
-import type { IRootState } from "./type";
+import { createStore, Store, useStore as useVuexStore } from "vuex";
+import type { IRootState, IStoreType } from "./type";
+
+import loginModule from "./login/login";
 const store = createStore<IRootState>({
   state() {
     return {
@@ -10,7 +12,13 @@ const store = createStore<IRootState>({
   mutations: {},
   actions: {},
   getters: {},
-  modules: {}
+  modules: {
+    login: loginModule
+  }
 });
+
+export function useStore(): Store<IStoreType> {
+  return useVuexStore();
+}
 
 export default store;

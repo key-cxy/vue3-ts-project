@@ -1,4 +1,5 @@
 import MyRequest from "./request";
+import local from "@/utils/cache";
 
 import { BASE_URL, TIME_OUT } from "./request/config";
 const myRequest = new MyRequest({
@@ -7,6 +8,11 @@ const myRequest = new MyRequest({
   interceptors: {
     requestInterceptor: (config) => {
       console.log("实例请求拦截器 --- 成功");
+      const token = local.getCache("token");
+      if (token) {
+        // (config.headers as any).Authorization = `Bearer ${token}`;
+        config.headers!.Authorization = `Bearer ${token}`;
+      }
       return config;
     },
     requestInterceptorCatch: (res) => {

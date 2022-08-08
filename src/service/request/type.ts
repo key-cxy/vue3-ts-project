@@ -8,4 +8,5 @@ export interface MyRequestInterceptors<T = AxiosResponse> {
 
 export interface MyRequestConfig<T = AxiosResponse> extends AxiosRequestConfig {
   interceptors?: MyRequestInterceptors<T>;
+  showLoading?: boolean;
 }
