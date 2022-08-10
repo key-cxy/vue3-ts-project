@@ -2,7 +2,7 @@
   <div class="search-page">
     <my-form v-model="formData" :form-items="searchFormConfig.formItems">
       <template #header>
-        <h1 class="header">高级检索11</h1>
+        <h1 class="header">高级检索</h1>
       </template>
       <template #footer>
         <el-row justify="end">

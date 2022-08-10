@@ -4,6 +4,8 @@ import "element-plus/theme-chalk/el-message.css";
 import "normalize.css";
 import "./assets/css/index.less";
 
+import { globalRegister } from "./global";
+
 // 路由
 import router from "./router";
 // vuex
@@ -12,6 +14,7 @@ import { setupStore } from "./store";
 
 const app = createApp(App);
 
+app.use(globalRegister);
 setupStore();
 app.use(router);
 app.use(store);
