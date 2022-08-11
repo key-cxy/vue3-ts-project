@@ -7,6 +7,7 @@ export interface IFormItem {
   options?: any[]; // 针对select
   otherOptions?: any; // 针对特殊属性
   rules?: any[];
+  isHidden?: boolean;
 }
 
 export interface IForm {

@@ -74,7 +74,6 @@ export function mapMenusToPermissions(userMenus: any[]) {
     }
   };
   _recurseGetPermission(userMenus);
-  console.log(permissions, "mapMenusToPermissions");
 
   return permissions;
 }
