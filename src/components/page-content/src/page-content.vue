@@ -1,9 +1,20 @@
 <template>
   <div class="page-content">
-    <my-table :listData="dataList" v-bind="contentTableConfig">
+    <my-table
+      :listData="dataList"
+      :listCount="dataCount"
+      v-bind="contentTableConfig"
+      v-model:page="pageInfo"
+    >
       <!-- 1.header中的插槽 -->
       <template #headerHandler>
-        <el-button type="primary">创建用户</el-button>
+        <el-button
+          v-if="isCreate"
+          @click="handleNewClick"
+          size="default"
+          type="primary"
+          >新建用户</el-button
+        >
       </template>
 
       <!-- 列中的插槽 -->
@@ -25,21 +36,46 @@
         <span>{{ $filters.formatTime(scope.row.updateAt) }}</span>
       </template>
 
-      <template #handler>
+      <template #handler="scope">
         <div class="handle-btns">
-          <el-button size="small" type="primary">编辑</el-button>
-          <el-button size="small" type="danger">删除</el-button>
+          <el-button
+            v-if="isUpdate"
+            @click="handleEditClick(scope.row)"
+            size="small"
+            type="primary"
+            >编辑</el-button
+          >
+          <el-button
+            v-if="isDelete"
+            @click="handleDeleteClick(scope.row)"
+            size="small"
+            type="danger"
+            >删除</el-button
+          >
         </div>
+      </template>
+
+      <!-- 在page-content中动态插入剩余的插槽 -->
+      <template
+        v-for="item in otherPropSlots"
+        :key="item.props"
+        #[item.slotName]="scope"
+      >
+        <template v-if="item.slotName">
+          <slot :name="item.slotName" :row="scope.row"></slot>
+        </template>
       </template>
     </my-table>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import MyTable from "@/base-ui/table";
 
 import { useStore } from "@/store";
+
+import { usePermission } from "@/hooks/use-permission";
 
 export default defineComponent({
   name: "PageContent",
@@ -56,22 +92,82 @@ export default defineComponent({
   components: {
     MyTable
   },
-  setup(props) {
+  emits: ["newBtnClick", "editBtnClick"],
+  setup(props, { emit }) {
     const store = useStore();
 
-    store.dispatch("system/getPageListAction", {
-      pageName: props.pageName,
-      queryInfo: {
-        offset: 0,
-        size: 10
-      }
-    });
+    // 0.获取操作权限
+    const isCreate = usePermission(props.pageName, "create");
+    const isUpdate = usePermission(props.pageName, "update");
+    const isDelete = usePermission(props.pageName, "delete");
+    const isQuery = usePermission(props.pageName, "query");
 
+    // 1.双向绑定pageInfo
+    const pageInfo = ref({ currentPage: 1, pageSize: 10 });
+    watch(pageInfo, () => getPageList());
+
+    // 2.发送网络请求
+    function getPageList(queryInfo: any = {}) {
+      if (!isQuery) return;
+      store.dispatch("system/getPageListAction", {
+        pageName: props.pageName,
+        queryInfo: {
+          offset: (pageInfo.value.currentPage - 1) * pageInfo.value.pageSize,
+          size: pageInfo.value.pageSize,
+          ...queryInfo
+        }
+      });
+    }
+    getPageList();
+
+    // 3.从vuex中获取数据
     const dataList = computed(() =>
       store.getters["system/pageListData"](props.pageName)
     );
+    const dataCount = computed(() => {
+      return store.getters["system/pageListCount"](props.pageName);
+    });
+
+    // 4.获取其他的动态插槽名称
+    const otherPropSlots = props.contentTableConfig?.propList.filter(
+      (item: any) => {
+        if (item.slotName === "status") return false;
+        if (item.slotName === "createAt") return false;
+        if (item.slotName === "updateAt") return false;
+        if (item.slotName === "handler") return false;
+        return true;
+      }
+    );
+
+    // 新建
+    const handleNewClick = () => {
+      emit("newBtnClick");
+    };
+
+    // 编辑
+    const handleEditClick = (item: any) => {
+      emit("editBtnClick", item);
+    };
+
+    // 删除
+    const handleDeleteClick = (item: any) => {
+      store.dispatch("system/deletePageDataAction", {
+        pageName: props.pageName,
+        id: item.id
+      });
+    };
     return {
-      dataList
+      getPageList,
+      dataList,
+      dataCount,
+      pageInfo,
+      otherPropSlots,
+      isCreate,
+      isUpdate,
+      isDelete,
+      handleNewClick,
+      handleEditClick,
+      handleDeleteClick
     };
   }
 });

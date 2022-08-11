@@ -1,9 +1,16 @@
 <template>
   <div class="user">
-    <page-search :searchFormConfig="searchFormConfig"> </page-search>
+    <page-search
+      :searchFormConfig="searchFormConfig"
+      @resetBtnClick="handleResetClick"
+      @queryBtnClick="handleQueryClick"
+    />
     <page-content
+      ref="pageContentRef"
       :contentTableConfig="contentTableConfig"
       pageName="users"
+      @newBtnClick="handleNewData"
+      @editBtnClick="handleEditData"
     ></page-content>
   </div>
 </template>
@@ -16,6 +23,8 @@ import PageContent from "@/components/page-content";
 import { searchFormConfig } from "./config/search.config";
 import { contentTableConfig } from "./config/content.config";
 
+import { usePageSearch } from "@/hooks/use-page-search";
+
 export default defineComponent({
   name: "user",
   components: {
@@ -23,9 +32,22 @@ export default defineComponent({
     PageContent
   },
   setup() {
+    const [pageContentRef, handleResetClick, handleQueryClick] =
+      usePageSearch();
+    const handleNewData = () => {
+      console.log("新增");
+    };
+    const handleEditData = (item: any) => {
+      console.log(item, "修改");
+    };
     return {
       searchFormConfig,
-      contentTableConfig
+      contentTableConfig,
+      pageContentRef,
+      handleResetClick,
+      handleQueryClick,
+      handleNewData,
+      handleEditData
     };
   }
 });
