@@ -3,6 +3,7 @@ import type { IRootState, IStoreType } from "./type";
 
 import loginModule from "./login/login";
 import systemModule from "./main/system/system";
+import dashboardModule from "./main/analysis/dashboard";
 
 import { getPageListData } from "@/service/main/system/system";
 
@@ -12,7 +13,8 @@ const store = createStore<IRootState>({
       name: "key",
       age: 18,
       entireDepartment: [],
-      entireRole: []
+      entireRole: [],
+      entireMenu: []
     };
   },
   mutations: {
@@ -21,6 +23,9 @@ const store = createStore<IRootState>({
     },
     changeEntireRole(state, list) {
       state.entireRole = list;
+    },
+    changeEntireMenu(state, list) {
+      state.entireMenu = list;
     }
   },
   actions: {
@@ -36,16 +41,20 @@ const store = createStore<IRootState>({
         size: 1000
       });
       const { list: roleList } = roleResult.data;
+      const menuResult = await getPageListData("/menu/list", {});
+      const { list: menuList } = menuResult.data;
 
       // 2.保存数据
       commit("changeEntireDepartment", departmentList);
       commit("changeEntireRole", roleList);
+      commit("changeEntireMenu", menuList);
     }
   },
   getters: {},
   modules: {
     login: loginModule,
-    system: systemModule
+    system: systemModule,
+    dashboard: dashboardModule
   }
 });
 
